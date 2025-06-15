@@ -22,8 +22,9 @@ class RoutineRecordApplicationService:
     def get_all_routine_records(self):
         return self.routine_record_repository.get_all()
 
-    def get_routines_by_device(self, device_id: str):
-        return self.routine_record_repository.find_by_device_id(device_id)
+    def get_routines_by_device(self, iot_device_id: str):
+        print(f"Buscando rutinas para iot_device_id: {iot_device_id}")
+        return self.routine_record_repository.find_by_iot_device_id(iot_device_id)
 
     def get_routine_record_by_id(self, record_id: str) -> RoutineRecord:
         record = self.routine_record_repository.find_by_id(record_id)

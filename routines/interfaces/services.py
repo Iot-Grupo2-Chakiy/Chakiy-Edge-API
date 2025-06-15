@@ -61,7 +61,6 @@ def get_routine_records():
     return jsonify(result), 200
 
 
-
 @routine_api.route("/api/v1/routine-monitoring/data-records/<record_id>", methods=["GET"])
 def get_routine_record_by_id(record_id):
     auth_result = authenticate_request()
@@ -85,33 +84,27 @@ def get_routine_record_by_id(record_id):
         "created_at": created_at_str
     }), 200
 
-@routine_api.route("/api/v1/routine-monitoring/data-records/<record_id>", methods=["PUT"])
-def update_routine_record(record_id):
+@routine_api.route("/api/v1/routine-monitoring/data-records/iot-device/<iot_device_id>", methods=["GET"])
+def get_routine_record_by_iot_device_id(iot_device_id):
     auth_result = authenticate_request()
     if auth_result:
         return auth_result
-    data = request.json
-    try:
-        routine_data = data["routine_data"]
-        created_at = data.get("created_at")
-        record = routine_record_service.update_routine_record(record_id, routine_data, created_at)
-        return jsonify({
-            "id": record.id,
-            "device_id": record.device_id,
-            "routine_data": record.routine_data,
-            "created_at": record.created_at.isoformat() + "Z"
-        }), 200
-    except KeyError:
-        return jsonify({"error": "Missing required fields"}), 400
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 404
-
-@routine_api.route("/api/v1/routine-monitoring/data-records/<record_id>", methods=["DELETE"])
-def delete_routine_record(record_id):
-    auth_result = authenticate_request()
-    if auth_result:
-        return auth_result
-    deleted = routine_record_service.delete_routine_record(record_id)
-    if not deleted:
-        return jsonify({"error": "Record not found"}), 404
-    return jsonify({"message": "Record deleted"}), 200
+    records = routine_record_service.get_routines_by_device(iot_device_id)
+    if not records:
+        return jsonify({"error": "No records found for this device"}), 404
+    result = []
+    for r in records:
+        created_at = r.created_at
+        if isinstance(created_at, datetime.datetime):
+            created_at_str = created_at.isoformat() + "Z"
+        else:
+            created_at_str = str(created_at)
+            if not created_at_str.endswith("Z"):
+                created_at_str += "Z"
+        result.append({
+            "id": r.id,
+            "device_id": r.device_id,
+            "routine_data": r.routine_data,
+            "created_at": created_at_str
+        })
+    return jsonify(result), 200

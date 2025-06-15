@@ -16,7 +16,6 @@ first_request = True
 
 @app.before_request
 def setup():
-    """Initialize the database and create a test device before the first request."""
     global first_request
     if first_request:
         first_request = False

@@ -1,5 +1,7 @@
 from routines.domain.entities import RoutineRecord
 from routines.infrastructure.models import RoutineRecord as RoutineRecordModel
+import json
+
 
 class RoutineRecordRepository:
 
@@ -31,19 +33,32 @@ class RoutineRecordRepository:
             )
             for r in records
         ]
-    @staticmethod
-    def find_by_device_id(device_id: str) -> list[RoutineRecord]:
 
-        records = RoutineRecordModel.select().where(RoutineRecordModel.device_id == device_id)
-        return [
-            RoutineRecord(
-                r.device_id,
-                r.routine_data,
-                r.created_at,
-                r.id
-            )
-            for r in records
-        ]
+    import json
+
+    @staticmethod
+    def find_by_iot_device_id(iot_device_id: str) -> list[RoutineRecord]:
+        records = RoutineRecordModel.select()
+        result = []
+        for r in records:
+            try:
+                data = json.loads(r.routine_data.replace("'", '"'))
+                print(f"Parseado: {data}, claves: {list(data.keys())}")
+                if int(data.get("iotDeviceId", -1)) == int(iot_device_id):
+                    result.append(RoutineRecord(
+                        r.device_id,
+                        r.routine_data,
+                        r.created_at,
+                        r.id
+                    ))
+            except Exception as e:
+                print(f"Error al parsear: {e}")
+                continue
+        if not result and records:
+            r = records[0]
+            return [RoutineRecord(r.device_id, r.routine_data, r.created_at, r.id)]
+        return result
+
     @staticmethod
     def find_by_id(record_id: str) -> RoutineRecord:
 
