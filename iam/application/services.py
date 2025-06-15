@@ -26,6 +26,11 @@ class AuthApplicationService:
         device: Optional[Device] = self.device_repository.find_by_id_and_api_key(device_id, api_key)
         return self.auth_service.authenticate(device)
 
+    def authenticate_api_key(self, api_key: str) -> bool:
+        """Valida si el api_key existe en la base de datos de dispositivos."""
+        # Busca el dispositivo por api_key (ajusta según tu repositorio)
+        return self.device_repository.find_by_api_key(api_key) is not None
+
     def get_or_create_test_device(self) -> Device:
         """Get or create a test device for development.
 

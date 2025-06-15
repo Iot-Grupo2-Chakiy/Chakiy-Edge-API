@@ -2,13 +2,15 @@
 from flask import Flask
 
 import iam.application.services
-from health.interfaces.services import health_api
+from healthDehumidifier.interfaces.services import health_api
 from iam.interfaces.services import iam_api
+from routines.interfaces.services import routine_api
 from shared.infrastructure.database import init_db
 
 app = Flask(__name__)
 app.register_blueprint(iam_api)
 app.register_blueprint(health_api)
+app.register_blueprint(routine_api)
 
 first_request = True
 
