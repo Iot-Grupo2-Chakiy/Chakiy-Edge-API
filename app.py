@@ -1,5 +1,4 @@
-"""Flask application entry point for the Smart Band Edge Service."""
-
+"Project must be adapted for Chakiy business logic"
 from flask import Flask
 
 import iam.application.services
