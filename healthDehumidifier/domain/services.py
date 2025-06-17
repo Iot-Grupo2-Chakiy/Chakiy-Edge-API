@@ -13,31 +13,28 @@ class HealthRecordService:
         """Initialize the HealthRecordService.
         """
 
+
     @staticmethod
-    def create_record(device_id: str, bpm: float, created_at: str | None) -> DehumidifierRecord:
+    def create_record(device_id: str, device_information: str, created_at: str | None) -> DehumidifierRecord:
+        """Crea un nuevo registro healthDehumidifier.
 
-        """Create a new healthDehumidifier record.
+        Args:
+            device_id (str): Identificador del dispositivo.
+            device_information (str): Información del dispositivo.
+            created_at (str): Timestamp ISO 8601 (ejemplo: '2025-06-04T18:23:00-05:00').
 
-                    Args:
-                        device_id (str): Device identifier.
-                        bpm (float): Heart rate in beats per minute.
-                        created_at (str): ISO 8601 timestamp (e.g., '2025-06-04T18:23:00-05:00').
+        Returns:
+            DehumidifierRecord: La entidad creada.
 
-                    Returns:
-                        DehumidifierRecord: The created healthDehumidifier record entity.
-
-                    Raises:
-                        ValueError: If BPM is invalid (not 0–200) or created_at is malformed.
-                    """
+        Raises:
+            ValueError: Si created_at es inválido.
+        """
         try:
-            bpm = float(bpm)
-            if not (0 <= bpm <= 200):
-                raise ValueError("Invalid BPM value")
             if created_at:
                 parsed_created_at = parse(created_at).astimezone(timezone.utc)
             else:
                 parsed_created_at = datetime.now(timezone.utc)
         except (ValueError, TypeError):
-            raise ValueError("Invalid data format")
+            raise ValueError("Formato de fecha inválido")
 
-        return DehumidifierRecord(device_id, bpm, parsed_created_at)
+        return DehumidifierRecord(device_id, device_information, parsed_created_at)

@@ -9,10 +9,7 @@ health_record_service = DehumidifierRecordApplicationService()
 
 @health_api.route("/api/v1/health-monitoring/data-records", methods=["POST"])
 def create_health_record():
-    """Maneja solicitudes POST para crear un registro de salud.
 
-    Espera JSON con device_id, humidifier_info y opcionalmente created_at.
-    """
     auth_result = authenticate_request()
     if auth_result:
         return auth_result
