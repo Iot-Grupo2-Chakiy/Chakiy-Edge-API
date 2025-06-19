@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 
 from routines.application.services import RoutineRecordApplicationService
 from iam.interfaces.services import authenticate_request
+import datetime
 
 routine_api = Blueprint("routine_api", __name__)
 routine_record_service = RoutineRecordApplicationService()
@@ -34,7 +35,6 @@ def create_routine_record():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-import datetime
 
 @routine_api.route("/api/v1/routine-monitoring/data-records", methods=["GET"])
 def get_routine_records():

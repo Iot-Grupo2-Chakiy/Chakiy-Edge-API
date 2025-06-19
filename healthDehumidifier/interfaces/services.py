@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-
+import datetime
 from healthDehumidifier.application.services import DehumidifierRecordApplicationService
 from iam.interfaces.services import authenticate_request
 
@@ -45,7 +45,8 @@ def get_health_records():
             "id": r.id,
             "device_id": r.device_id,
             "humidifier_info": r.humidifier_info,
-            "created_at": r.created_at.isoformat() + "Z"
+            "created_at": r.created_at.isoformat() + "Z" if isinstance(r.created_at, datetime.datetime) else str(
+                r.created_at)
         }
         for r in records
     ]

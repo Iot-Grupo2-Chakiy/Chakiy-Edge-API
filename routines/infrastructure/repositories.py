@@ -37,28 +37,19 @@ class RoutineRecordRepository:
 
 
     @staticmethod
-    def find_by_iot_device_id(iot_device_id: str) -> list[RoutineRecord]:
+    def find_by_iot_device_id(device_id: str) -> list[RoutineRecord]:
         records = RoutineRecordModel.select()
         result = []
         for r in records:
-            try:
-                routine_data_str = r.routine_data
-                print(f"routine_data de id {r.id}: {routine_data_str}")
-                routine_data_str = routine_data_str.replace("'", '"')
-                routine_data_str = re.sub(r'\bTrue\b', 'true', routine_data_str)
-                routine_data_str = re.sub(r'\bFalse\b', 'false', routine_data_str)
-                data = json.loads(routine_data_str)
-                if int(data.get("iotDeviceId", -1)) == int(iot_device_id):
-                    result.append(RoutineRecord(
-                        r.device_id,
-                        r.routine_data,
-                        r.created_at,
-                        r.id
-                    ))
-            except Exception as e:
-                print(f"Excepción al parsear routine_data con id {r.id}: {e}")
-                continue
+            if r.device_id == device_id:
+                result.append(RoutineRecord(
+                    r.device_id,
+                    r.routine_data,
+                    r.created_at,
+                    r.id
+                ))
         return result
+
 
     @staticmethod
     def find_by_id(record_id: str) -> RoutineRecord:
