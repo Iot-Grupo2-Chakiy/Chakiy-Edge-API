@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from dateutil.parser import parse
 
-from healthDehumidifier.domain.entities import DehumidifierRecord
+from healthDehumidifier.domain.entities import DehumidifierRecord, IoTDevice
 
 
 class HealthRecordService:
@@ -12,7 +12,6 @@ class HealthRecordService:
     def __init__(self):
         """Initialize the HealthRecordService.
         """
-
 
     @staticmethod
     def create_record(device_id: str, device_information: str, created_at: str | None) -> DehumidifierRecord:
@@ -38,3 +37,29 @@ class HealthRecordService:
             raise ValueError("Formato de fecha inválido")
 
         return DehumidifierRecord(device_id, device_information, parsed_created_at)
+
+
+class IoTDeviceService:
+    """Service for managing IoT devices."""
+    
+    @staticmethod
+    def create_device(device_id: str, device_name: str, device_type: str, 
+                     humidifier_info: str) -> IoTDevice:
+        """Create a new IoT device.
+        
+        Args:
+            device_id (str): Unique identifier for the device
+            device_name (str): Human readable name for the device
+            device_type (str): Type of device (e.g., 'dehumidifier')
+            humidifier_info (str): Device configuration information
+            
+        Returns:
+            IoTDevice: The created device entity
+        """
+        return IoTDevice(
+            device_id=device_id,
+            device_name=device_name,
+            device_type=device_type,
+            humidifier_info=humidifier_info,
+            created_at=datetime.now(timezone.utc)
+        )
