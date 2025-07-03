@@ -64,3 +64,13 @@ class RoutineRecordRepository:
             )
         except RoutineRecordModel.DoesNotExist:
             return None
+
+    @staticmethod
+    def delete(record_id: str) -> bool:
+        """Delete a routine record by its ID"""
+        try:
+            record = RoutineRecordModel.get(RoutineRecordModel.id == record_id)
+            record.delete_instance()
+            return True
+        except RoutineRecordModel.DoesNotExist:
+            return False

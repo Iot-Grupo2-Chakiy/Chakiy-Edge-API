@@ -13,7 +13,7 @@ class RoutineRecordApplicationService:
         self.device_repository = DeviceRepository()
 
     def create_routine_record(self, device_id: str, routine_data: str, created_at: str, api_key: str) -> RoutineRecord:
-        if not self.device_repository.find_by_id_and_api_key(device_id, api_key):
+        if not self.device_repository.find_by_api_key(api_key):
             raise ValueError("Device not found or unauthorized")
 
         record = self.routine_service.create_record(device_id, routine_data, created_at)
@@ -31,3 +31,7 @@ class RoutineRecordApplicationService:
         if not record:
             raise ValueError("Routine record not found")
         return record
+
+    def delete_routine_record(self, record_id: str) -> bool:
+        """Delete a routine record by its ID"""
+        return self.routine_record_repository.delete(record_id)

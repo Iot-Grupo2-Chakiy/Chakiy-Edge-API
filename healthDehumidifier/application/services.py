@@ -39,7 +39,7 @@ class DehumidifierRecordApplicationService:
         return self.iot_device_repository.find_by_device_id(device_id)
     
     def update_iot_device(self, device_id: str, device_name: str = None, device_type: str = None, 
-                         humidifier_info: str = None, is_active: str = None, api_key: str = None):
+                         humidifier_info: str = None, api_key: str = None):
         """Update an existing IoT device.
         
         Args:
@@ -47,7 +47,6 @@ class DehumidifierRecordApplicationService:
             device_name (str, optional): New device name
             device_type (str, optional): New device type
             humidifier_info (str, optional): New humidifier info
-            is_active (str, optional): New active status
             api_key (str): API key for authentication
             
         Returns:
@@ -67,8 +66,29 @@ class DehumidifierRecordApplicationService:
         
         # Update the device
         return self.iot_device_repository.update(
-            device_id, device_name, device_type, humidifier_info, is_active
+            device_id, device_name, device_type, humidifier_info
         )
+    
+    def update_iot_device_estado(self, device_id: str, estado: bool, api_key: str = None):
+        """Update only the estado field in humidifier_info of an IoT device.
+        
+        Args:
+            device_id (str): The device_id to update (can be numeric id as string)
+            estado (bool): New estado value
+            api_key (str, optional): API key for authentication
+            
+        Returns:
+            IoTDevice: The updated device, None if not found
+            
+        Raises:
+            ValueError: If API key is invalid
+        """
+        # Validate API key
+        if api_key and not self.device_repository.find_by_api_key(api_key):
+            raise ValueError("Wrong api key")
+        
+        # Update the device estado
+        return self.iot_device_repository.update_estado(device_id, estado)
     
     def create_iot_device(self, device_id: str, device_name: str, device_type: str, 
                          humidifier_info: str, api_key: str) -> IoTDevice:

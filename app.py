@@ -1,5 +1,6 @@
 "Project must be adapted for Chakiy business logic"
 from flask import Flask
+from flask_cors import CORS
 
 import iam.application.services
 from healthDehumidifier.interfaces.services import health_api
@@ -8,6 +9,12 @@ from routines.interfaces.services import routine_api
 from shared.infrastructure.database import init_db
 
 app = Flask(__name__)
+
+# Configure CORS to allow requests from the frontend
+CORS(app, origins=["http://localhost:5173", "http://127.0.0.1:5173"], 
+     allow_headers=["Content-Type", "X-API-Key", "Accept"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+
 app.register_blueprint(iam_api)
 app.register_blueprint(health_api)
 app.register_blueprint(routine_api)

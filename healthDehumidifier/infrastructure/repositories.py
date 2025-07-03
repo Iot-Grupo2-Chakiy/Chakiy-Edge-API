@@ -101,7 +101,6 @@ class IoTDeviceRepository:
                 d.device_name,
                 d.device_type,
                 d.humidifier_info,
-                d.is_active,
                 d.created_at,
                 d.updated_at,
                 d.id
@@ -111,7 +110,7 @@ class IoTDeviceRepository:
 
     @staticmethod
     def update(device_id: str, device_name: str = None, device_type: str = None, 
-               humidifier_info: str = None, is_active: str = None):
+               humidifier_info: str = None):
         """Update an existing IoT device.
         
         Args:
@@ -119,7 +118,6 @@ class IoTDeviceRepository:
             device_name (str, optional): New device name
             device_type (str, optional): New device type  
             humidifier_info (str, optional): New humidifier info
-            is_active (str, optional): New active status
             
         Returns:
             IoTDevice: The updated device, None if not found
@@ -139,8 +137,6 @@ class IoTDeviceRepository:
                 update_data["device_type"] = device_type
             if humidifier_info is not None:
                 update_data["humidifier_info"] = humidifier_info
-            if is_active is not None:
-                update_data["is_active"] = is_active
             
             # Perform the update
             query = IoTDeviceEdgeApi.update(**update_data).where(IoTDeviceEdgeApi.device_id == device_id)
@@ -154,10 +150,79 @@ class IoTDeviceRepository:
                 updated_device.device_name,
                 updated_device.device_type,
                 updated_device.humidifier_info,
-                updated_device.is_active,
                 updated_device.created_at,
                 updated_device.updated_at,
                 updated_device.id
             )
         except IoTDeviceEdgeApi.DoesNotExist:
+            return None
+    
+    @staticmethod
+    def update_estado(device_identifier: str, estado: bool):
+        """Update only the estado field in humidifier_info.
+        
+        Args:
+            device_identifier (str): Either device_id or numeric id as string
+            estado (bool): New estado value
+            
+        Returns:
+            IoTDevice: The updated device, None if not found
+        """
+        try:
+            from datetime import datetime, timezone
+            import json
+            
+            
+            device_model = None
+            try:
+                device_model = IoTDeviceEdgeApi.get(IoTDeviceEdgeApi.device_id == device_identifier)
+            except IoTDeviceEdgeApi.DoesNotExist:
+                # Try by numeric id if device_identifier is numeric
+                try:
+                    numeric_id = int(device_identifier)
+                    device_model = IoTDeviceEdgeApi.get(IoTDeviceEdgeApi.id == numeric_id)
+                except (ValueError, IoTDeviceEdgeApi.DoesNotExist) as e:
+                    return None
+            
+            if not device_model:
+                return None
+            
+            
+            # Parse current humidifier_info
+            current_info = device_model.humidifier_info
+            
+            if isinstance(current_info, str):
+                try:
+                    info_dict = json.loads(current_info)
+                except json.JSONDecodeError:
+                    info_dict = {}
+            else:
+                info_dict = current_info or {}
+            
+            # Update only the estado field
+            info_dict["estado"] = estado
+            updated_info = json.dumps(info_dict)
+            
+            # Update the device
+            update_data = {
+                "humidifier_info": updated_info,
+                "updated_at": datetime.now(timezone.utc)
+            }
+            
+            query = IoTDeviceEdgeApi.update(**update_data).where(IoTDeviceEdgeApi.id == device_model.id)
+            rows_updated = query.execute()
+            
+            # Get the updated device
+            updated_device = IoTDeviceEdgeApi.get(IoTDeviceEdgeApi.id == device_model.id)
+            
+            return IoTDevice(
+                updated_device.device_id,
+                updated_device.device_name,
+                updated_device.device_type,
+                updated_device.humidifier_info,
+                updated_device.created_at,
+                updated_device.updated_at,
+                updated_device.id
+            )
+        except Exception as e:
             return None

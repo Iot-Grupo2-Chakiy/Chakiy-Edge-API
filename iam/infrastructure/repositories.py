@@ -30,7 +30,7 @@ class DeviceRepository:
     def get_or_create_test_device() -> Device:
 
         device, _ = DeviceModel.get_or_create(
-            device_id="dehumidifier_chakiy_001",
+            device_id="SoyPruebaChakiy",
             defaults={"api_key": "apichakiykey", "created_at": "2025-06-04T23:23:00Z"}
         )
         return Device(device.device_id, device.api_key, device.created_at)

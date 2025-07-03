@@ -297,7 +297,6 @@ def update_dehumidifier():
         device_name = data.get("device_name")
         device_type = data.get("device_type")
         humidifier_info = data.get("humidifier_info")
-        is_active = data.get("is_active")
         
         # Handle humidifier_info JSON parsing
         if humidifier_info is not None:
@@ -313,7 +312,7 @@ def update_dehumidifier():
         logger.info(f"Updating device: device_id={device_id}, device_name={device_name}, device_type={device_type}")
         
         device = health_record_service.update_iot_device(
-            device_id, device_name, device_type, humidifier_info, is_active,
+            device_id, device_name, device_type, humidifier_info,
             request.headers.get("X-API-Key")
         )
         
@@ -328,9 +327,77 @@ def update_dehumidifier():
             "device_name": device.device_name,
             "device_type": device.device_type,
             "humidifier_info": device.humidifier_info,
-            "is_active": device.is_active,
             "created_at": device.created_at.isoformat() + "Z" if isinstance(device.created_at, datetime.datetime) else str(device.created_at),
             "updated_at": device.updated_at.isoformat() + "Z" if device.updated_at and isinstance(device.updated_at, datetime.datetime) else str(device.updated_at) if device.updated_at else None
+        }), 200
+        
+    except ValueError as e:
+        logger.error(f"ValueError: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+@health_api.route("/api/v1/health-dehumidifier/update-estado", methods=["PUT"])
+def update_estado_dehumidifier():
+    auth_result = authenticate_request()
+    if auth_result:
+        return auth_result
+
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    
+    data = None
+    try:
+        data = request.json
+    except Exception as e:
+        data = None
+    
+    if data is None:
+        try:
+            raw_data = request.get_data(as_text=True)
+            data = json.loads(raw_data)
+        except Exception as e:
+            logger.error(f"JSON parsing failed: {e}")
+            return jsonify({"error": "Invalid JSON data"}), 400
+
+    # Validate required fields
+    if not data or "device_id" not in data:
+        return jsonify({"error": "Missing required field: device_id"}), 400
+    if "estado" not in data:
+        return jsonify({"error": "Missing required field: estado"}), 400
+
+    try:
+        device_id = data["device_id"]  
+        estado = data["estado"]
+        
+        logger.info(f"Updating device estado: device_id={device_id}, estado={estado}")
+        
+        device = health_record_service.update_iot_device_estado(
+            device_id, estado, request.headers.get("X-API-Key")
+        )
+        
+        if not device:
+            return jsonify({"error": "Device not found"}), 404
+        
+        logger.info(f"Successfully updated device estado with id={device.id}")
+        
+        humidifier_info = device.humidifier_info
+        if isinstance(humidifier_info, str):
+            try:
+                humidifier_info = json.loads(humidifier_info)
+            except json.JSONDecodeError:
+                pass
+        
+        return jsonify({
+            "id": device.id,
+            "device_id": device.device_id,
+            "device_name": device.device_name,
+            "device_type": device.device_type,
+            "humidifier_info": humidifier_info,
+            "created_at": device.created_at.isoformat() + "Z" if isinstance(device.created_at, datetime.datetime) else str(device.created_at),
+            "updated_at": device.updated_at.isoformat() + "Z" if device.updated_at and isinstance(device.updated_at, datetime.datetime) else str(device.updated_at) if device.updated_at else None,
+            "message": f"Estado updated to: {estado}"
         }), 200
         
     except ValueError as e:
